@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, status %}
+{% block title %}Başvurular · İş Akışı{% endblock %}
+{% block content %}
+<header class="top">{{ heading("Başvurular", "Başvuru paketlerini, gönderim kayıtlarını ve sonuçları takip edin.") }}<a class="button primary" href="/jobs">İlanları aç</a></header>
+<section class="listing">
+{% for item in items %}
+  <article class="job-row"><div class="company-mark" aria-hidden="true">{{ item.job.company[0] }}</div><div class="job-main"><a class="job-title" href="/applications/{{ item.id }}">{{ item.job.title }}</a><div class="muted">{{ item.job.company }} / {{ item.updated|local }}</div></div>{{ status(item.state) }}</article>
+{% else %}<div class="empty"><h2>Başvuru kaydı yok</h2><p>Bir ilandan paket hazırlayarak veya önceki başvurunuzu kaydederek başlayın.</p><a href="/jobs">İlanları incele</a></div>{% endfor %}
+</section>
+{% endblock %}

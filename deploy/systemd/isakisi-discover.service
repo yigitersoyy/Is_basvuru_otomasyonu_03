@@ -1,0 +1,9 @@
+[Unit]
+Description=Zamanı gelen iş ilanı kaynaklarını kuyruğa ekle
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/.local/lib/isakisi
+EnvironmentFile=%h/.config/isakisi/service.env
+ExecStart=%h/.local/lib/isakisi/.venv/bin/isakisi discover --enqueue-only
+UMask=0077

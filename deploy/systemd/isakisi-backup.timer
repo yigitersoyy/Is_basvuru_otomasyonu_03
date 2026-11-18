@@ -1,0 +1,9 @@
+[Unit]
+Description=İş Akışı günlük yedeği
+
+[Timer]
+OnCalendar=*-*-* 03:37:00 Europe/Istanbul
+Persistent=true
+
+[Install]
+WantedBy=timers.target

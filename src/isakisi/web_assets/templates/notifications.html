@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, csrf_field %}
+{% block title %}Bildirimler · İş Akışı{% endblock %}
+{% block content %}
+<header class="top">{{ heading("Bildirimler") }}{% if notices %}<form method="post" action="/notifications/read">{{ csrf_field(csrf) }}<button class="button">Tümünü okundu işaretle</button></form>{% endif %}</header>
+<section class="listing">
+{% for notice in notices %}<article class="job-row"><div class="company-mark" aria-hidden="true">{{ '✓' if notice.seen else '•' }}</div><div class="job-main"><a class="job-title" href="{{ notice.link }}">{{ notice.message }}</a><small class="muted">{{ notice.created|local }}</small></div></article>
+{% else %}<div class="empty"><h2>Bildirim yok</h2><p>Öncelikli ilanlar ve işlem bekleyen başvurular burada görünür.</p></div>{% endfor %}
+</section>
+{% endblock %}

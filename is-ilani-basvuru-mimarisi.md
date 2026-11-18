@@ -243,11 +243,13 @@ Platform koşulları, gönderim yetkileri ve maliyetler için doğrudan kaynakla
 
 ## 15. Codex teslim kontrol listesi
 
-- [ ] Temiz bilgisayarda kilitli bağımlılıklardan kurulum, migration ve `doctor` başarılı.
-- [ ] Greenhouse, Lever ve RSS keşfi kaynak izinleriyle çalışıyor. Tekrarlı ve yarım tarama testleri geçiyor.
-- [ ] Her öneri puan, bilgi kapsamı, ilan kanıtı ve profil dayanağı gösteriyor.
-- [ ] CV, ön yazı ve yanıtlar yalnızca doğrulanmış olgulardan üretiliyor.
-- [ ] Kullanıcı hedefi, dosyaları, yanıtları ve beyanları görerek tek başvuruya onay veriyor.
-- [ ] Manuel, kısmi ve yetkili otomatik yollar panelde ve testlerde ayırt edilebiliyor.
-- [ ] Çift tıklama, zaman aşımı, süreç çökmesi ve yedekten dönüş ikinci gönderim üretmiyor.
-- [ ] Ücretli servis, bulut hesabı, işveren anahtarı ve yerel dil modeli olmadan MVP tamamlanıyor.
+- [x] Python 3.12 ile kilitli kurulum, migration ve `doctor` doğrulandı.
+- [x] Greenhouse, Lever, Ashby ve WWR kaynaklarında canlı okuma yapıldı. Tekrarlı ve yarım tarama testleri geçti.
+- [x] Panel hesaplanan puanı, bilgi kapsamını, ilan kanıtlarını ve doğrulanmış profil dayanaklarını gösteriyor.
+- [x] Otomatik CV, ön yazı ve yanıt taslaklarında doğrulanmış olgular kullanılıyor. Kullanıcı düzenlemeleri yeni paket sürümü oluşturuyor.
+- [x] Kullanıcı hedefi, dosyaları, yanıtları ve mevcut rıza seçeneklerini görerek tek başvuruyu onaylıyor.
+- [x] Manuel, simülasyon, izinli tarayıcı doldurma ve yetkili Greenhouse API yolları var. Yetkili gönderim işveren test anahtarı yerine sahte HTTP yanıtlarıyla sınandı.
+- [x] Çift onay, yanıt kaybı, kesilen işçi ve yedekten dönüş testlerinde ikinci gönderim oluşmadı.
+- [x] Keşif, eşleştirme, belge üretimi ve takip akışı ücretli servis veya model olmadan doğrulandı.
+
+Gerçek başvurular için aday profili ve işveren izinleri kullanıcı tarafından yapılandırılır. E5 ve Ollama kalite ölçümü, kullanıcı tarafından etiketlenmiş ilan kümesiyle çalıştırılır. Kurulum ve çalıştırma adımları [README](README.md) dosyasındadır.

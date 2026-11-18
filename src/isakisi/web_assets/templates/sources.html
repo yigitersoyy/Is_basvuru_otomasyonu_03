@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, csrf_field %}
+{% block title %}Kaynaklar · İş Akışı{% endblock %}
+{% set run_labels = {'complete':'Tamamlandı','running':'Taranıyor','failed':'Hata','interrupted':'Kesildi'} %}
+{% set task_labels = {'pending':'Sırada','running':'İşleniyor','failed':'Hata','discover':'Keşif','submit':'Gönderim','reconcile':'Uzlaştırma'} %}
+{% block content %}
+<header class="top">{{ heading("Kaynaklar", "Tarama geçmişini, kaynak izinlerini ve bekleyen işleri kontrol edin.") }}
+  <form method="post" action="/sources/scan">{{ csrf_field(csrf) }}<button class="button primary">Kaynakları tara</button></form>
+</header>
+{% if error %}<p class="notice warning" role="alert">{{ error }}</p>{% endif %}
+{% if restore_lock %}<p class="notice warning">Yedekten dönüş etkin. Canlı gönderimler resmî form üzerinden yürütülüyor.</p>{% endif %}
+{% if unknown_count %}<p class="notice warning"><a href="/applications">{{ unknown_count }} başvuru sonucu teyit bekliyor.</a></p>{% endif %}
+<div class="columns">
+  <div class="stack">
+    <section class="panel"><h2>Yapılandırılan kaynaklar</h2>
+    {% for source in configurations %}
+      <div class="evidence"><div class="split"><strong>{{ source.company or source.id }}</strong><span class="tag">{{ source.platform }}</span></div>
+        <p>Son tam tarama {{ (statuses.get(source.id) or {}).get('last_complete')|local }}</p>
+        <p class="muted">{{ 'Okuma açık' if source.read else 'Okuma kapalı' }}{% if source.prefill %} / Form doldurma izni{% endif %}{% if source.submit %} / API gönderim izni{% endif %}</p>
+        {% if source.permission_url %}<a href="{{ source.permission_url }}" target="_blank" rel="noopener noreferrer">İzin kaydı{% if source.checked_on %} · {{ source.checked_on }}{% endif %}</a>{% endif %}
+      </div>
+    {% else %}<p>Etkin bir kaynak yapılandırması bulunamadı.</p>{% endfor %}
+    </section>
+    <section class="panel"><h2>Son taramalar</h2>
+    {% for run in runs %}
+      <div class="evidence"><div class="split"><strong>{{ run.source_id }}</strong><span class="tag">{{ run_labels.get(run.status, run.status) }}</span></div>
+      <small>{{ run.started|local }} / {{ run.page }} sayfa{% if run.error %} / Hata kodu {{ run.error }}{% endif %}</small></div>
+    {% else %}<p class="muted">Tarama geçmişi yok.</p>{% endfor %}
+    </section>
+  </div>
+  <aside><section class="panel"><h2>İş kuyruğu</h2>
+    {% for item in queue %}
+    <div class="evidence"><div class="split"><strong>{{ task_labels.get(item.kind, item.kind) }}</strong><span class="tag">{{ task_labels.get(item.state, item.state) }}</span></div><small>{{ item.available|local }}{% if item.error %} / {{ item.error }}{% endif %}</small></div>
+    {% else %}<p class="muted">Bekleyen iş yok.</p>{% endfor %}
+  </section></aside>
+</div>
+{% endblock %}

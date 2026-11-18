@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, score, csrf_field, status %}
+{% block title %}{{ job.item.title }} · İş Akışı{% endblock %}
+{% block content %}
+<a class="back" href="/jobs">‹ İlanlar</a>
+<header class="top">{{ heading(job.item.title, job.item.company ~ (" / " ~ job.item.location if job.item.location else "")) }}{{ score(job) }}</header>
+<div class="columns">
+  <div class="stack">
+    <section class="panel">
+      <h2>Eşleştirme gerekçeleri</h2>
+      {% if job.match and job.match.reasons %}
+      {% for reason in job.match.reasons %}
+      <div class="evidence">
+        <div class="split"><strong>{{ reason.label }}</strong><span class="tag {{ 'good' if reason.state == 'met' else 'warning' }}">{{ evidence_labels[reason.state] }}</span></div>
+        {% if reason.required %}<small>Zorunlu tercih</small>{% endif %}
+        {% if reason.detail %}<p>{{ reason.detail }}</p>{% endif %}
+        {% if reason.evidence %}<blockquote>{{ reason.evidence }}</blockquote>{% endif %}
+        {% for fact in reason.facts %}<small class="line">Profil: {{ fact.text }} <span class="muted">({{ fact.source }})</span></small>{% endfor %}
+      </div>
+      {% endfor %}
+      {% else %}<p class="muted">Gerekçeleri görmek için <a href="/profile">profilinizi</a> ve tercihlerinizi kaydedin.</p>{% endif %}
+    </section>
+    <section class="panel"><h2>İlan metni</h2><div class="job-description">{{ job.item.description }}</div></section>
+  </div>
+  <aside class="stack">
+    <section class="panel">
+      <h2>Başvuru</h2>
+      {% if record %}<p><a href="/applications/{{ record.id }}">Başvuru sayfası</a> {{ status(record.state) }}</p>{% endif %}
+      {% if job.duplicate_of %}
+      <p>Bu ilan <a href="/jobs/{{ job.duplicate_of }}">başka bir kayıtla</a> benzerlik gösteriyor.</p>
+      <form method="post" action="/jobs/{{ job.id }}/duplicate" class="stack">{{ csrf_field(csrf) }}
+        <button class="button" name="decision" value="same">Aynı pozisyon</button><button class="button" name="decision" value="separate">Ayrı pozisyon</button>
+      </form>
+      {% elif job.state == 'open' and not locked %}
+      <form method="post" action="/jobs/{{ job.id }}/prepare" class="stack">{{ csrf_field(csrf) }}
+        <label>Başvuru yolu<select name="route"><option value="auto">{{ routes[proposed_route] }}</option>{% if proposed_route != 'manual' %}<option value="manual">{{ routes.manual }}</option>{% endif %}</select></label>
+        <button class="button primary">{{ "Paketi yeniden hazırla" if record else "Başvuru paketi hazırla" }}</button>
+      </form>
+      {% elif job.state != 'open' %}<p class="notice warning">İlan durumu {{ "kapalı" if job.state == "closed" else "belirsiz" }}.</p>{% endif %}
+      {% if not locked and not job.duplicate_of %}
+      <details><summary>Önceden başvurdum</summary><form method="post" action="/jobs/{{ job.id }}/prior" class="stack">{{ csrf_field(csrf) }}<label>Not <input name="note" maxlength="1000"></label><button class="button">Önceki başvuruyu kaydet</button></form></details>
+      {% endif %}
+    </section>
+    <section class="panel">
+      <h2>İlan bilgisi</h2>
+      <dl><dt>Kaynak</dt><dd>{{ job.platform }}</dd>
+        {% if job.requisition %}<dt>Talep numarası</dt><dd>{{ job.requisition }}</dd>{% endif %}
+        {% if job.item.deadline %}<dt>Son başvuru</dt><dd>{{ job.item.deadline }}</dd>{% endif %}
+        {% if job.item.remote_region %}<dt>Uzaktan çalışma bölgesi</dt><dd>{{ job.item.remote_region }}</dd>{% endif %}
+        <dt>Son tarama</dt><dd>{{ job.last_seen|local }}</dd>
+      </dl>
+      {% if job.platform != 'fixture' %}<a href="{{ job.item.url }}" target="_blank" rel="noopener noreferrer">Özgün ilanı aç</a>{% endif %}
+      <details><summary>İlan sürümleri</summary><ul>{% for version in versions %}<li><a href="/jobs/{{ job.id }}/versions/{{ version.id }}">{{ version.created|local }} · #{{ version.id }}</a></li>{% endfor %}</ul></details>
+    </section>
+  </aside>
+</div>
+{% endblock %}

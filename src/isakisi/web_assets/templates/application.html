@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, status, csrf_field %}
+{% block title %}Başvuru · İş Akışı{% endblock %}
+{% block content %}
+<a class="back" href="/applications">‹ Başvurular</a>
+<header class="top">{{ heading(job.item.title, job.item.company) }}{{ status(record.state) }}</header>
+<div class="columns">
+  <div class="stack">
+    {% if payload %}
+    <section class="panel stack">
+      <div class="split"><h2>Başvuru paketi</h2><span class="tag">Sürüm {{ bundle.id }}</span></div>
+      <dl><dt>Başvuru yolu</dt><dd>{{ routes[payload.route] }}</dd><dt>Hedef adres</dt><dd class="break">{{ payload.target }}</dd>
+        <dt>Paket özeti</dt><dd class="break"><code>{{ bundle.digest }}</code></dd>
+      </dl>
+      <div class="actions">
+        {% for name,label in [('cv.pdf','CV PDF'),('cv.docx','CV DOCX'),('on-yazi.txt','Ön yazı TXT'),('yanitlar.txt','Yanıtlar TXT')] %}
+        <a class="button" href="/applications/{{ record.id }}/documents/{{ name }}?bundle={{ bundle.id }}">{{ label }}</a>
+        {% endfor %}
+      </div>
+      <details><summary>CV metnini önizle</summary>
+        <div class="document">{% for kind,line in payload.cv_lines %}{% if kind in ['title','section'] %}<h3>{{ line }}</h3>{% else %}<p>{{ line }}</p>{% endif %}{% endfor %}</div>
+      </details>
+      {% if not locked and not stale %}
+      <form class="stack" method="post" action="/applications/{{ record.id }}/edit">{{ csrf_field(csrf) }}
+        <input type="hidden" name="bundle" value="{{ bundle.id }}">
+        <label>Ön yazı <textarea name="cover" rows="10" maxlength="12000">{{ payload.cover }}</textarea></label>
+        {% for question in payload.questions %}
+          <label>{{ question.label }}{% if question.required %} (zorunlu){% endif %}
+          {% set selected = payload.answers[loop.index0] %}
+          {% if question.get("values") %}<select name="answer"><option value="">Seçin</option>{% for choice in question["values"] %}<option value="{{ choice.value }}" {% if selected == choice.value|string %}selected{% endif %}>{{ choice.label }}</option>{% endfor %}</select>
+          {% else %}<textarea name="answer" rows="2" maxlength="4000">{{ selected }}</textarea>{% endif %}
+          </label>
+        {% endfor %}
+        {% if not payload.questions %}<small class="muted">Bu pakette kayıtlı form sorusu yok.</small>{% endif %}
+        {% for name,label in payload.consent_fields.items() %}
+        <label>{{ label }}<select name="consent_{{ name }}">
+          <option value="">Seçin</option><option value="yes" {% if payload.consent.get(name) == 'yes' %}selected{% endif %}>Evet</option>
+          <option value="no" {% if payload.consent.get(name) == 'no' %}selected{% endif %}>Hayır</option>
+        </select></label>
+        {% endfor %}
+        <div><button class="button">Yeni paket sürümü kaydet</button></div>
+      </form>
+      {% else %}
+      <h3>Ön yazı</h3><div class="document">{{ payload.cover }}</div>
+      {% for question in payload.questions %}<div><strong>{{ question.label }}</strong><p>{{ payload.answers[loop.index0] or 'Yanıt boş' }}</p></div>{% endfor %}
+      {% for name,label in payload.consent_fields.items() %}
+      <div><strong>{{ label }}</strong><p>{{ {'yes':'Evet','no':'Hayır'}.get(payload.consent.get(name),'Seçim yok') }}</p></div>
+      {% endfor %}
+      {% endif %}
+    </section>
+    {% else %}<section class="panel"><h2>Başvuru paketi</h2><p class="muted">{{ 'Paket saklama süresi doldu.' if bundle else 'Bu başvuru haricî bir kayıt olarak eklendi.' }}</p></section>{% endif %}
+    <section class="panel"><h2>Geçmiş</h2>
+      {% for event in events %}<div class="evidence"><div class="split"><strong>{{ states[event.state] }}</strong><small>{{ event.created|local }}</small></div>
+        <small>{{ event_labels.get(event.evidence, event.evidence) }}</small>{% if event.note %}<p>{{ event.note }}</p>{% endif %}</div>
+      {% else %}<p class="muted">Henüz geçmiş kaydı yok.</p>{% endfor %}
+    </section>
+  </div>
+  <aside class="stack">
+    {% if payload and not locked %}
+    <section class="panel stack">
+      <h2>Paket onayı</h2>
+      {% if stale %}<p class="notice warning">İlan veya profil değişti. Güncel bir paket hazırlayın.</p><a href="/jobs/{{ job.id }}">İlanı aç</a>
+      {% elif not manual_approval %}
+      <form method="post" action="/applications/{{ record.id }}/approve" class="stack">{{ csrf_field(csrf) }}
+        <input type="hidden" name="bundle" value="{{ bundle.id }}"><input type="hidden" name="digest" value="{{ bundle.digest }}">
+        <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{ job.item.company }} için hedefi, belgeleri ve kayıtlı yanıtları inceledim.</label>
+        {% if payload.route == 'prefill' %}<p class="muted">Onay, görüntülenen iletişim alanlarının ve CV’nin izinli forma aktarılmasını kapsar.</p>{% endif %}
+        <button class="button primary">{{ {'manual':'Paketi onayla','simulate':'Onayla ve simüle et','authorized':'Onayla ve gönder','prefill':'Onayla ve formu doldur'}[payload.route] }}</button>
+      </form>
+      {% endif %}
+      {% if manual_approval and not stale and job.platform != "fixture" %}<a class="button primary" href="{{ payload.target }}" target="_blank" rel="noopener noreferrer">Resmî formu aç</a>{% endif %}
+    </section>
+    {% endif %}
+    {% if versions|length > 1 %}
+    <section class="panel"><h2>Paket sürümleri</h2>
+    {% for version in versions %}<p>{% if bundle.id == version.id %}<strong>Sürüm {{ version.id }}</strong>{% else %}<a href="/applications/{{ record.id }}{% if not loop.first %}?version={{ version.id }}{% endif %}">Sürüm {{ version.id }}</a>{% endif %} <small>{{ version.created|local }}</small></p>{% endfor %}
+    {% if archived %}<small>Önceki sürüm görüntüleniyor.</small>{% endif %}
+    </section>
+    {% endif %}
+    {% if follow %}
+    <section class="panel"><h2>Sonucu kaydet</h2>
+      {% if record.state == 'submission_unknown' %}<p class="notice warning">İşveren veya portal üzerinden sonucu kontrol edin.</p>{% endif %}
+      <form method="post" action="/applications/{{ record.id }}/record-result" class="stack">{{ csrf_field(csrf) }}
+        <label>Durum<select name="state" required><option value="">Seçin</option>{% for state in follow %}<option value="{{ state }}">{{ states[state] }}</option>{% endfor %}</select></label>
+        <label>Not <textarea name="note" rows="2" maxlength="1000"></textarea></label><button class="button primary">Sonucu kaydet</button>
+      </form>
+    </section>
+    {% endif %}
+    {% if record.state in ["queued","submitting"] %}<section class="panel"><h2>İşlem sürüyor</h2><p>İşçi başvuruyu işledikten sonra durumu bu sayfada görüntüleyebilirsiniz.</p><a href="/applications/{{ record.id }}">Durumu yenile</a></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

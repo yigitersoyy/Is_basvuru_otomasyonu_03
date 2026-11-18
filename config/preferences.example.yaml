@@ -1,0 +1,5 @@
+preferences:
+  - {kind: title, value: Backend, required: false}
+  - {kind: remote_region, value: TR, required: true}
+  - {kind: skill, value: Python, required: false}
+  - {kind: salary, value: "60000|EUR|year|gross", required: false}

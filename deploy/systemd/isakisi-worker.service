@@ -1,0 +1,14 @@
+[Unit]
+Description=İş Akışı görev işçisi
+
+[Service]
+WorkingDirectory=%h/.local/lib/isakisi
+EnvironmentFile=%h/.config/isakisi/service.env
+ExecStart=%h/.local/lib/isakisi/.venv/bin/isakisi worker
+UMask=0077
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

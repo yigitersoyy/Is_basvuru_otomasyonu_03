@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field %}
+{% block title %}Giriş · İş Akışı{% endblock %}
+{% block public %}
+<section class="login-card">
+  <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span> İş Akışı</div>
+  <h1>Yerel panele giriş</h1>
+  <p class="lede">Giriş kodunu terminalde <code>uv run isakisi login-token</code> komutuyla görüntüleyin.</p>
+  {% if error %}<p class="notice warning" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" class="stack">{{ csrf_field(csrf) }}
+    <label>Giriş kodu <input name="token" type="password" required autocomplete="current-password"></label>
+    <button class="button primary">Giriş yap</button>
+  </form>
+</section>
+{% endblock %}

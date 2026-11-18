@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, csrf_field %}
+{% block title %}İlan ekle · İş Akışı{% endblock %}
+{% block content %}
+<a class="back" href="/jobs">‹ İlanlar</a><header class="top">{{ heading("İlan ekle") }}</header>
+<form class="panel stack narrow" method="post">{{ csrf_field(csrf) }}
+  <div class="form-grid"><label>Unvan <input name="title" maxlength="500" required></label><label>İşveren <input name="company" maxlength="300" required></label></div>
+  <label>Özgün ilan bağlantısı <input name="url" type="url" required></label>
+  <label>Resmî form bağlantısı <input name="apply_url" type="url"></label>
+  <label>İlan metni <textarea name="description" rows="8" maxlength="40000" required></textarea></label>
+  <label>Form soruları <textarea name="questions" rows="3" maxlength="7500" placeholder="Her satıra bir soru"></textarea></label>
+  <div class="form-grid"><label>Lokasyon <input name="location"></label><label>Ülke <input name="country"></label>
+    <label>Çalışma biçimi<select name="workplace"><option value="">Belirtilmemiş</option><option value="remote">Uzaktan</option><option value="hybrid">Hibrit</option><option value="onsite">Ofiste</option></select></label>
+    <label>Uzaktan çalışma bölgesi <input name="remote_region"></label>
+    <label>İlan dili<select name="language"><option value="und">Otomatik</option><option value="tr">Türkçe</option><option value="en">İngilizce</option></select></label>
+    <label>Son başvuru <input name="deadline" type="date"></label>
+  </div>
+  <details><summary>Ücret bilgisi</summary><div class="form-grid">
+    <label>Alt sınır <input name="salary_min" type="number" min="0"></label><label>Üst sınır <input name="salary_max" type="number" min="0"></label>
+    <label>Para birimi <input name="currency" maxlength="3" placeholder="EUR"></label>
+    <label>Dönem <select name="salary_period"><option value="">Belirtilmemiş</option><option value="hour">Saat</option><option value="month">Ay</option><option value="year">Yıl</option></select></label>
+    <label>Brüt veya net <select name="salary_basis"><option value="">Belirtilmemiş</option><option value="gross">Brüt</option><option value="net">Net</option></select></label>
+  </div></details>
+  <div><button class="button primary">İlanı kaydet</button></div>
+</form>
+{% endblock %}

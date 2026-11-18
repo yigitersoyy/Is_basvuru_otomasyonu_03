@@ -1,0 +1,33 @@
+# Örnek. Pano adlarını, işverenleri ve izin kayıtlarını kendi takip listenizle değiştirin.
+sources:
+  - id: ornek-greenhouse
+    platform: greenhouse
+    company: Örnek İşveren
+    board: YOUR_BOARD
+    read: false
+    hosts: [boards-api.greenhouse.io, job-boards.greenhouse.io]
+    permission_url: https://docs.greenhouse.io/job-board
+    checked_on: "2026-11-18"
+  - id: ornek-lever
+    platform: lever
+    company: Örnek İşveren
+    board: YOUR_BOARD
+    region: global
+    read: false
+    hosts: [api.lever.co, jobs.lever.co]
+    permission_url: https://github.com/lever/postings-api
+    checked_on: "2026-11-18"
+  - id: wwr
+    platform: wwr
+    url: https://weworkremotely.com/remote-jobs.rss
+    hosts: [weworkremotely.com]
+    permission_url: https://weworkremotely.com/remote-job-rss-feed
+    checked_on: "2026-11-18"
+  - id: ornek-ashby
+    platform: ashby
+    company: Örnek İşveren
+    board: YOUR_BOARD
+    read: false
+    hosts: [api.ashbyhq.com, jobs.ashbyhq.com]
+    permission_url: https://developers.ashbyhq.com/docs/public-job-posting-api
+    checked_on: "2026-11-18"

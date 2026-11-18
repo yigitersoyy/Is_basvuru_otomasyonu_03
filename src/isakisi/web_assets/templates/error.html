@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}İşlem tamamlanamadı · İş Akışı{% endblock %}
+{% block content %}<h1>İşlem tamamlanamadı</h1><p class="notice warning" role="alert">{{ error }}</p><a class="button" href="/jobs">İlanlara dön</a>{% endblock %}
+{% block public %}<section class="login-card"><h1>İşlem tamamlanamadı</h1><p class="notice warning" role="alert">{{ error }}</p><a class="button" href="/login">Girişe dön</a></section>{% endblock %}

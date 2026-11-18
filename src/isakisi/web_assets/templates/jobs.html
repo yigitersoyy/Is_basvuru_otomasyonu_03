@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, score, csrf_field %}
+{% block title %}İlanlar · İş Akışı{% endblock %}
+{% block content %}
+<header class="top">
+  {{ heading("İş ilanları", "Fırsatları keşfedin, uygunluğu inceleyin ve başvuru paketinizi hazırlayın.") }}
+  <a class="button primary" href="/jobs/new"><span aria-hidden="true">+</span> İlan ekle</a>
+</header>
+<div class="metrics">
+  <a href="/jobs"><span>Açık ilan</span><strong>{{ counts.open }}</strong></a>
+  <a href="/jobs?filter=priority"><span>Yüksek öncelik</span><strong>{{ counts.priority }}</strong></a>
+  <a href="/jobs?filter=review"><span>İncelenecek</span><strong>{{ counts.review }}</strong></a>
+  <a href="/applications"><span>Başvurular</span><strong>{{ application_count }}</strong></a>
+</div>
+<section class="listing" aria-labelledby="job-list">
+  <div class="listing-top"><h2 id="job-list">İlan listesi</h2><span class="muted">{{ jobs|length }} sonuç</span></div>
+  <div class="filterbar">
+    <nav class="tabs" aria-label="İlan filtresi">
+      {% for key,label in [('open','Açık'),('priority','Öncelikli'),('review','İncelenecek'),('all','Tümü')] %}
+      <a href="/jobs?filter={{ key }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}" {% if filter == key %}aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+    <form class="search" action="/jobs" role="search">
+      <input type="hidden" name="filter" value="{{ filter }}"><input type="search" name="q" value="{{ q }}" placeholder="İlanlarda ara" aria-label="İlanlarda ara"><button class="button">Ara</button>
+    </form>
+  </div>
+  {% for job in jobs %}
+  <article class="job-row">
+    <div class="company-mark" aria-hidden="true">{{ job.item.company[0] }}</div>
+    <div class="job-main"><a class="job-title" href="/jobs/{{ job.id }}">{{ job.item.title }}</a><div class="muted">{{ job.item.company }}{% if job.item.location %} <span class="slash">/</span> {{ job.item.location }}{% endif %}</div>
+      <div class="tags">
+        {% if job.state == 'closed' %}<span class="tag">Kapalı</span>{% elif job.state == 'uncertain' %}<span class="tag warning">Durumu belirsiz</span>{% endif %}
+        {% if job.duplicate_of %}<span class="tag warning">Olası kopya</span>{% elif job.match and job.match.review %}<span class="tag warning">Koşul eksik</span>{% elif job.match and job.match.conflict %}<span class="tag warning">Koşul çelişiyor</span>{% elif job.match and job.match.priority and job.state == 'open' %}<span class="tag good">Öncelikli</span>{% endif %}
+        {% for skill in job.item.skills[:4] %}<span class="tag">{{ skill }}</span>{% endfor %}
+      </div>
+    </div>
+    {{ score(job) }}
+  </article>
+  {% else %}
+  <div class="empty"><h3>Bu görünümde ilan yok</h3><p>Filtreyi değiştirin, bir ilan ekleyin veya kaynakları tarayın.</p><a href="/sources">Kaynakları aç</a></div>
+  {% endfor %}
+</section>
+{% if alerts %}<p class="under"><a href="/notifications">{{ alerts }} okunmamış bildirim</a></p>{% endif %}
+{% endblock %}

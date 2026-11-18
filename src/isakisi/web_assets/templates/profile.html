@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "macros.html" import heading, csrf_field %}
+{% block title %}Profil · İş Akışı{% endblock %}
+{% macro kind_options(selected) %}{% for id,name in fact_labels.items() %}<option value="{{ id }}" {% if selected == id %}selected{% endif %}>{{ name }}</option>{% endfor %}{% endmacro %}
+{% macro langs(selected) %}{% for id,name in [('und','Belirsiz'),('tr','Türkçe'),('en','İngilizce')] %}<option value="{{ id }}" {% if selected == id %}selected{% endif %}>{{ name }}</option>{% endfor %}{% endmacro %}
+{% macro preference(id,pref) %}
+<div class="preference">
+  <label>Koşul <select name="pref_kind_{{ id }}">{% for kind,label in pref_labels.items() %}<option value="{{ kind }}" {% if pref.kind == kind %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  <label>Değer <input name="pref_value_{{ id }}" value="{{ pref.value or '' }}" maxlength="200"></label>
+  <label class="check"><input type="checkbox" name="pref_required_{{ id }}" {% if pref.required %}checked{% endif %}> Zorunlu</label>
+</div>
+{% endmacro %}
+{% block content %}
+<header class="top">{{ heading("Aday profili", "CV bilgilerinizi kaynak metniyle doğrulayın ve iş tercihlerinizi belirleyin.") }}
+{% if profile.id %}<span class="tag">Sürüm {{ profile.id }}</span>{% endif %}</header>
+<div class="columns profile-grid">
+  <form class="stack" method="post" action="/profile">{{ csrf_field(csrf) }}
+    <input type="hidden" name="version" value="{{ profile.id or '' }}">
+    <section class="panel stack"><h2>İletişim bilgileri</h2>
+      <label>Ad soyad <input name="name" value="{{ profile.identity.name }}" maxlength="160" autocomplete="name"></label>
+      <div class="form-grid"><label>E-posta <input name="email" type="email" value="{{ profile.identity.email }}" autocomplete="email"></label><label>Telefon <input name="phone" type="tel" value="{{ profile.identity.phone }}" autocomplete="tel"></label></div>
+    </section>
+    <section class="panel"><h2>Profil olguları</h2>
+      {% for fact in profile.facts %}
+      <details class="fact"><summary>{{ fact.text[:110] }} <span class="tag {{ 'good' if fact.verified_at else '' }}">{{ "Doğrulandı" if fact.verified_at else "Taslak" }}</span></summary>
+        <div class="stack"><div class="form-grid"><label>Tür <select name="kind{{ fact.id }}">{{ kind_options(fact.kind) }}</select></label><label>Dil <select name="language{{ fact.id }}">{{ langs(fact.language) }}</select></label></div>
+          <label>Olgu <textarea name="text{{ fact.id }}" rows="2" maxlength="2000">{{ fact.text }}</textarea></label>
+          <label>Kaynak metni <textarea name="source{{ fact.id }}" rows="2" maxlength="2400">{{ fact.source }}</textarea></label>
+          <div class="form-grid"><label>Başlangıç <input type="date" name="start{{ fact.id }}" value="{{ fact.start or '' }}"></label><label>Bitiş <input type="date" name="end{{ fact.id }}" value="{{ fact.end or '' }}"></label></div>
+          <div class="actions"><label class="check"><input type="checkbox" name="verify{{ fact.id }}" {% if fact.verified_at %}checked{% endif %}> Kaynağı doğruladım</label><label class="check"><input type="checkbox" name="remove{{ fact.id }}"> Sil</label></div>
+        </div>
+      </details>
+      {% else %}<p class="muted">CV yükleyin veya aşağıdan bir kayıt ekleyin.</p>{% endfor %}
+      <details><summary>Elle olgu ekle</summary><div class="stack">
+        <div class="form-grid"><label>Tür <select name="new_kind">{{ kind_options("skill") }}</select></label><label>Dil <select name="new_language">{{ langs("und") }}</select></label></div>
+        <label>Olgu <textarea name="new_text" rows="2" maxlength="2000"></textarea></label>
+        <label>Kaynak metni <textarea name="new_source" rows="2" maxlength="2400"></textarea></label>
+        <div class="form-grid"><label>Başlangıç <input type="date" name="new_start"></label><label>Bitiş <input type="date" name="new_end"></label></div>
+        <label class="check"><input type="checkbox" name="new_verify"> Kaynağı doğruladım</label>
+      </div></details>
+    </section>
+    <section class="panel stack"><h2>İş tercihleri</h2>
+      <small class="muted">Ücreti örnekteki biçimde girin. <code>60000|EUR|year|gross</code>. Bir tercihi silmek için değerini boş bırakın.</small>
+      {% for pref in profile.preferences %}{{ preference(loop.index0,pref) }}{% endfor %}
+      {{ preference('new',{}) }}
+    </section>
+    <div><button class="button primary">Profil sürümünü kaydet</button></div>
+  </form>
+  <aside><section class="panel stack"><h2>CV içe aktar</h2><p class="muted">Dosyadaki metin doğrulama bekleyen taslak olgulara dönüştürülür.</p>
+    <form class="stack" method="post" action="/profile/import" enctype="multipart/form-data">{{ csrf_field(csrf) }}
+      <label>PDF, DOCX veya TXT <input name="cv" type="file" accept=".pdf,.docx,.txt" required></label><button class="button">CV içe aktar</button>
+    </form></section></aside>
+</div>
+{% endblock %}

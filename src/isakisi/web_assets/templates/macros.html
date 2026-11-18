@@ -1,0 +1,14 @@
+{% macro csrf_field(token) -%}
+<input type="hidden" name="csrf" value="{{ token }}">
+{%- endmacro %}
+{% macro status(value) -%}
+<span class="tag {{ 'warning' if value in ['submission_unknown','attention'] else 'good' if value in ['submitted','offer','simulated'] else '' }}">{{ states.get(value, value) }}</span>
+{%- endmacro %}
+{% macro heading(title, intro='') -%}
+<div><h1>{{ title }}</h1>{% if intro %}<p class="lede">{{ intro }}</p>{% endif %}</div>
+{%- endmacro %}
+{% macro score(job) -%}
+{% if job.match and job.match.score is not none %}
+<div class="score"><span><strong>{{ job.match.score }}</strong><span class="muted"> / 100</span></span><meter min="0" max="100" value="{{ job.match.score }}" aria-label="Uygunluk puanı">{{ job.match.score }}</meter><small>Kapsam %{{ job.match.coverage }}</small></div>
+{% else %}<div class="score no-score">Puan bekliyor</div>{% endif %}
+{%- endmacro %}
